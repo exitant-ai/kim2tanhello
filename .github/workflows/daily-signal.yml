@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "50 19 * * 1-5"
+permissions:
+  contents: write
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -16,4 +18,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: python qbot.py
+        run: python qb_full.py
+      - name: save state
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "update state" && git push)
