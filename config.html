@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>무한순환 봇 설정</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{--bg:#0e1621;--panel:#17212b;--panel2:#1d2a36;--txt:#e9eef3;--muted:#7d8e9e;
+    --line:#23323f;--accent:#54a9eb;--gold:#e7b34a;--up:#2ec27e;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;}
+  .wrap{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  header{padding:14px 16px 6px;}
+  header .t{font-size:17px;font-weight:600;}
+  header .s{font-size:12px;color:var(--accent);margin-top:2px;}
+  .prog{height:3px;background:var(--line);margin:8px 16px 0;border-radius:3px;overflow:hidden;}
+  .prog>i{display:block;height:100%;background:linear-gradient(90deg,#54a9eb,#2ec27e);width:0;transition:.3s;}
+  .body{flex:1;padding:16px;}
+  .q{font-size:15px;font-weight:500;margin-bottom:14px;line-height:1.5;}
+  .q .mut{color:var(--muted);font-size:13px;font-weight:400;}
+  .grid{display:grid;gap:8px;}
+  .c2{grid-template-columns:repeat(2,1fr);}.c1{grid-template-columns:1fr;}
+  button.opt{background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:11px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;}
+  button.opt:active{transform:scale(.97);}
+  .custom{display:flex;gap:8px;margin-top:8px;}
+  .custom input{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    border-radius:11px;padding:13px;font-size:15px;outline:none;}
+  .sval{text-align:center;font-size:40px;font-weight:800;margin:6px 0 16px;}
+  .sval .u{font-size:17px;color:var(--muted);margin-left:3px;}
+  input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:6px;
+    background:linear-gradient(90deg,var(--accent) var(--p,50%),#2a3b49 var(--p,50%));outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;
+    background:#fff;border:3px solid var(--accent);}
+  .srow{display:flex;justify-content:space-between;margin-top:6px;color:var(--muted);font-size:12px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:14px 0;}
+  .chip{background:var(--panel2);border:1px solid var(--line);border-radius:16px;
+    padding:7px 14px;font-size:13px;cursor:pointer;color:var(--txt);}
+  .chip.rec{border-color:var(--gold);color:var(--gold);}
+  .foot{padding:14px 16px 22px;}
+  button.go{width:100%;border:none;border-radius:13px;padding:16px;font-size:16px;font-weight:700;
+    color:#fff;background:linear-gradient(135deg,#2ea864,#1f6b45);cursor:pointer;}
+  .sum{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;
+    font-size:14px;line-height:1.9;}
+  .sum b{color:#fff;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="t">무한순환 봇 설정</div><div class="s" id="hs">설정 1/8</div>
+    <div class="prog"><i id="pg"></i></div></header>
+  <div class="body" id="body"></div>
+  <div class="foot" id="foot"></div>
+</div>
+<script>
+var tg = window.Telegram ? window.Telegram.WebApp : null;
+if(tg){ tg.ready(); tg.expand(); }
+
+var cfg = {cap:1000,ticker:'TQQQ',buyPct:3,tpPct:10,sUp:10,sPct:20,iDn:15,iPct:50};
+var STEPS = [
+ {k:'cap',label:'시작 자산',q:'운용할 <b>시작 자산</b>을 선택하세요 (USD)',
+   type:'btn',opts:[1000,3000,5000,10000],fmt:function(v){return '$'+v.toLocaleString();},cols:2,custom:true},
+ {k:'ticker',label:'종목',q:'운용할 <b>종목</b>을 선택하세요',
+   type:'btn',opts:['TQQQ','QLD','SOXL'],labels:['TQQQ (나스닥100 3배)','QLD (나스닥100 2배)','SOXL (반도체 3배)'],cols:1},
+ {k:'buyPct',label:'하락일 매수%',q:'<b>하락 마감일에만</b> 매수할 % <span class="mut">(총자산 대비) · 상승일은 매수 안 함</span>',
+   type:'sld',min:1,max:10,step:0.5,def:3,suf:'%',presets:[1,2,3,5,7,10]},
+ {k:'tpPct',label:'익절%',q:'매수 물량 <b>익절 %</b> <span class="mut">(매수가 +N%에 GTC 매도)</span>',
+   type:'sld',min:3,max:36,step:3,def:10,suf:'%',presets:[3,6,10,15,24,36]},
+ {k:'sUp',label:'보관 발동%',q:'총자산이 <b>+N%</b> 오르면 금고로 보관',
+   type:'sld',min:5,max:100,step:5,def:10,suf:'%',presets:[5,10,20,30,50,100]},
+ {k:'sPct',label:'보관 비율%',q:'그때 <b>현금의 M%</b>를 금고로 보관',
+   type:'sld',min:5,max:50,step:5,def:20,suf:'%',presets:[5,10,20,30,50]},
+ {k:'iDn',label:'투입 발동%',q:'총자산이 <b>-N%</b> 빠지면 금고에서 투입',
+   type:'sld',min:10,max:70,step:5,def:15,suf:'%',presets:[10,15,25,40,70]},
+ {k:'iPct',label:'투입 비율%',q:'그때 <b>금고의 N%</b>를 트레이딩으로 투입',
+   type:'sld',min:10,max:100,step:5,def:50,suf:'%',presets:[10,25,50,75,100]}
+];
+var idx = 0;
+var body=document.getElementById('body'), foot=document.getElementById('foot');
+
+function render(){
+  if(idx>=STEPS.length){ summary(); return; }
+  var s=STEPS[idx];
+  document.getElementById('hs').textContent='설정 '+(idx+1)+'/'+STEPS.length+' · '+s.label;
+  document.getElementById('pg').style.width=(idx/STEPS.length*100)+'%';
+  body.innerHTML='<div class="q">['+(idx+1)+'/'+STEPS.length+'] '+s.q+'</div>';
+  foot.innerHTML='';
+  if(s.type==='btn'){
+    var g=document.createElement('div');g.className='grid c'+(s.cols||2);
+    s.opts.forEach(function(o,i){
+      var b=document.createElement('button');b.className='opt';
+      b.innerHTML=s.labels?s.labels[i]:(s.fmt?s.fmt(o):o);
+      b.onclick=function(){ cfg[s.k]=o; idx++; render(); };
+      g.appendChild(b);
+    });
+    body.appendChild(g);
+    if(s.custom){
+      var c=document.createElement('div');c.className='custom';
+      c.innerHTML='<input id="ci" type="number" placeholder="직접입력 (예: 2000)"><button class="opt" id="cg" style="flex:0 0 auto">확인</button>';
+      body.appendChild(c);
+      document.getElementById('cg').onclick=function(){var v=parseFloat(document.getElementById('ci').value);if(v>0){cfg[s.k]=v;idx++;render();}};
+    }
+  } else {
+    var def=s.def;
+    body.innerHTML+='<div class="sval"><span id="sv">'+def+'</span><span class="u">'+s.suf+'</span></div>'+
+      '<input type="range" id="rg" min="'+s.min+'" max="'+s.max+'" step="'+s.step+'" value="'+def+'">'+
+      '<div class="srow"><span>'+s.min+s.suf+'</span><span>'+s.max+s.suf+'</span></div>'+
+      '<div class="chips" id="ch"></div>';
+    var rg=document.getElementById('rg'), sv=document.getElementById('sv');
+    function fill(){rg.style.setProperty('--p',((rg.value-s.min)/(s.max-s.min)*100)+'%');}
+    fill(); rg.oninput=function(){sv.textContent=rg.value;fill();};
+    var ch=document.getElementById('ch');
+    (s.presets||[]).forEach(function(p){
+      var c=document.createElement('button');c.className='chip'+(p===s.def?' rec':'');
+      c.textContent=p+s.suf+(p===s.def?' ·추천':'');
+      c.onclick=function(){rg.value=p;sv.textContent=p;fill();};
+      ch.appendChild(c);
+    });
+    var go=document.createElement('button');go.className='go';go.textContent='이 값으로 선택 ✓';
+    go.onclick=function(){ cfg[s.k]=parseFloat(rg.value); idx++; render(); };
+    foot.appendChild(go);
+  }
+}
+
+function summary(){
+  document.getElementById('hs').textContent='설정 완료';
+  document.getElementById('pg').style.width='100%';
+  body.innerHTML='<div class="q">✅ <b>설정 완료!</b> 이 설정으로 봇을 시작할까요?</div>'+
+    '<div class="sum">'+
+    '• 시작자산 <b>$'+Number(cfg.cap).toLocaleString()+'</b> · 종목 <b>'+cfg.ticker+'</b><br>'+
+    '• 하락일 매수 <b>'+cfg.buyPct+'%</b> · 익절 <b>+'+cfg.tpPct+'%</b><br>'+
+    '• 보관 +'+cfg.sUp+'% → 현금 '+cfg.sPct+'%<br>'+
+    '• 투입 −'+cfg.iDn+'% → 금고 '+cfg.iPct+'%</div>';
+  foot.innerHTML='';
+  var go=document.createElement('button');go.className='go';go.textContent='🤖 이 설정으로 봇 시작';
+  go.onclick=function(){
+    if(tg){ tg.sendData(JSON.stringify(cfg)); tg.close(); }
+    else { alert('텔레그램 안에서 열어주세요.\n\n'+JSON.stringify(cfg,null,1)); }
+  };
+  foot.appendChild(go);
+  var re=document.createElement('button');re.className='opt';re.style.cssText='width:100%;margin-top:8px';
+  re.textContent='처음부터 다시';re.onclick=function(){idx=0;render();};
+  foot.appendChild(re);
+}
+render();
+</script>
+</body>
+</html>
