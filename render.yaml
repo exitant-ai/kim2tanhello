@@ -1,15 +1,21 @@
-# Render 'Deploy to Render' 버튼용 청사진
+# Render 'Deploy to Render' 버튼용 청사진 (+ 영구 디스크 포함)
 services:
   - type: worker
     name: muhan-signal-bot
     runtime: python
-    plan: starter            # 항상 켜짐 (폴링 봇이라 필요)
+    plan: starter                # 항상 켜짐 (폴링 봇이라 필요)
     buildCommand: "pip install tzdata"
     startCommand: "python bot_server.py"
+    disk:                        # ★ 영구 디스크 — 재시작해도 사용자 데이터 유지
+      name: data
+      mountPath: /data
+      sizeGB: 1
     envVars:
-      - key: TOKEN           # @BotFather 봇 토큰 (설치자가 입력)
+      - key: TOKEN              # @BotFather 봇 토큰 (설치자가 입력)
         sync: false
-      - key: TD_KEY          # Twelve Data API 키 (설치자가 입력)
+      - key: TD_KEY             # Twelve Data API 키 (설치자가 입력)
         sync: false
-      - key: WEBAPP_URL      # 설정 미니앱 주소 (공용 호스팅 기본값)
+      - key: WEBAPP_URL         # 설정 미니앱 주소
         value: "https://exitant-ai.github.io/kim2tanhello/config.html"
+      - key: USERS_FILE         # ★ 사용자 데이터를 영구 디스크에 저장
+        value: "/data/users.json"
