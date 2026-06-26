@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 무한순환 미니앱 봇 (Render 항상 켜짐 / 폴링 방식)
+데이터: Twelve Data (무료 API키, 클라우드에서도 안정적). 야후 차단 회피.
 - /start  -> '설정 열기' 미니앱 버튼
-- 미니앱에서 설정 완료 -> 설정 수신·저장(사용자별)
-- 매일 미국 마감 직전 -> 사용자별 시그널 자동 발송
-전략: 하락일 매수 + 묶음익절 + 보관 + 투입 + 쿼터 (시뮬레이터와 동일)
+- 미니앱 설정 완료 -> 사용자별 저장
+- 매일 마감 직전 -> 사용자별 시그널 자동 발송
 """
 import os, json, time, copy, urllib.request, urllib.parse
 from datetime import datetime
@@ -12,14 +12,20 @@ from zoneinfo import ZoneInfo
 
 TOKEN      = os.environ.get("TOKEN", "")
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://example.github.io/config.html")
-SEND_H, SEND_M = 15, 50           # 미국 동부시간 발송 시각 (마감 직전)
+TD_KEY     = os.environ.get("TD_KEY", "")     # Twelve Data 무료 API 키
+SEND_H, SEND_M = 15, 50
 USERS_FILE = os.environ.get("USERS_FILE", "users.json")
 LABELS = {"TQQQ": "나스닥100 3배", "QLD": "나스닥100 2배", "SOXL": "반도체 3배"}
 QEPS = 1.0
 ET = ZoneInfo("America/New_York")
 API = "https://api.telegram.org/bot" + TOKEN
+TD  = "https://api.twelvedata.com"
 
-# ===== 텔레그램 =====
+def http_get(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=25) as r:
+        return r.read().decode("utf-8", "replace")
+
 def call(method, payload):
     data = json.dumps(payload).encode()
     req = urllib.request.Request(API + "/" + method, data=data,
@@ -35,7 +41,6 @@ def send(chat_id, text, reply_markup=None):
     if reply_markup: p["reply_markup"] = reply_markup
     call("sendMessage", p)
 
-# ===== 저장 =====
 def load_users():
     if os.path.exists(USERS_FILE):
         try: return json.load(open(USERS_FILE, encoding="utf-8"))
@@ -103,15 +108,30 @@ def step_day(S, price, cfg):
     S["prevPx"] = price; S["lastTotal"] = tot
     return ev
 
+# ===== 데이터 (Twelve Data) =====
 def fetch(ticker):
-    import yfinance as yf
-    t = yf.Ticker(ticker)
-    daily = t.history(period="1mo", interval="1d", auto_adjust=False)
+    if not TD_KEY:
+        raise Exception("TD_KEY(데이터 API 키) 환경변수가 없습니다")
     today = datetime.now(ET).date().isoformat()
-    conf = [(i.date().isoformat(), float(r["Close"])) for i, r in daily.iterrows() if i.date().isoformat() < today]
-    try: cur = float(t.fast_info["last_price"])
-    except Exception: cur = conf[-1][1] if conf else None
-    return conf, cur
+    ts = json.loads(http_get(TD + "/time_series?symbol=" + ticker +
+                             "&interval=1day&outputsize=20&apikey=" + TD_KEY))
+    if ts.get("status") == "error":
+        raise Exception(ts.get("message", "data error"))
+    confirmed = []
+    for v in reversed(ts.get("values", [])):      # 과거->최근 순으로
+        d = v["datetime"][:10]
+        try: c = float(v["close"])
+        except Exception: continue
+        if d < today: confirmed.append((d, c))
+    cur = None
+    try:
+        pr = json.loads(http_get(TD + "/price?symbol=" + ticker + "&apikey=" + TD_KEY))
+        cur = float(pr["price"])
+    except Exception:
+        cur = confirmed[-1][1] if confirmed else None
+    if not cur or cur <= 0:
+        cur = confirmed[-1][1] if confirmed else None
+    return confirmed, cur
 
 def money(x): return "$" + format(round(x), ",d")
 def money2(x): return "$" + format(x, ",.2f")
@@ -143,10 +163,8 @@ def build_message(cfg, prov, ev, prev_px, cur):
     L.append("※ 봇은 직접 매매하지 않습니다. 주문은 직접 넣어주세요.")
     return "\n".join(L)
 
-# ===== 핸들러 =====
 def cmd_start(cid):
-    kb = {"keyboard": [[{"text": "⚙️ 설정 열기", "web_app": {"url": WEBAPP_URL}}]],
-          "resize_keyboard": True}
+    kb = {"keyboard": [[{"text": "⚙️ 설정 열기", "web_app": {"url": WEBAPP_URL}}]], "resize_keyboard": True}
     send(cid, "무한순환 자동 시그널 봇이에요 🤖\n아래 [⚙️ 설정 열기]로 시드·종목·매수%·익절%를 설정하면,\n매일 미국 마감 직전에 시그널을 자동으로 보내드려요.", kb)
 
 def on_config(cid, data_str):
@@ -156,14 +174,12 @@ def on_config(cid, data_str):
         cfg["ticker"] = str(cfg.get("ticker", "TQQQ"))
     except Exception as e:
         send(cid, "설정을 읽지 못했어요: " + str(e)); return
-    users = load_users()
-    users[str(cid)] = {"cfg": cfg, "state": None}   # 새 설정 -> 상태 초기화
-    save_users(users)
+    users = load_users(); users[str(cid)] = {"cfg": cfg, "state": None}; save_users(users)
     send(cid, "✅ 설정 저장 완료!\n종목 " + cfg["ticker"] + " · 시드 " + money(cfg["cap"])
          + " · 하락매수 " + str(cfg["buyPct"]) + "% · 익절 " + str(cfg["tpPct"]) + "%"
          + "\n매일 미국 마감 직전에 시그널을 보내드릴게요. /now 로 지금 한번 받아볼 수도 있어요.")
 
-def run_for_user(cid, u, save=True):
+def run_for_user(cid, u):
     cfg = u.get("cfg")
     if not cfg: return
     try:
@@ -185,13 +201,22 @@ def run_daily():
     for cid, u in users.items():
         try: run_for_user(cid, u)
         except Exception as e: print("[daily err]", cid, e)
+        time.sleep(1)
     save_users(users)
 
-# ===== 메인 루프 =====
+def _get_updates(offset):
+    q = {"timeout": 25}
+    if offset is not None: q["offset"] = offset
+    try:
+        with urllib.request.urlopen(API + "/getUpdates?" + urllib.parse.urlencode(q), timeout=40) as r:
+            return json.loads(r.read().decode())
+    except Exception as e:
+        print("[poll err]", e); time.sleep(3); return {}
+
 def main():
     if not TOKEN:
         print("TOKEN 환경변수가 없습니다."); return
-    print("bot started. webapp:", WEBAPP_URL)
+    print("bot started. webapp:", WEBAPP_URL, "| TD_KEY set:", bool(TD_KEY))
     offset = None; last_sent = None
     while True:
         now = datetime.now(ET)
@@ -199,7 +224,7 @@ def main():
             today = now.date().isoformat()
             if last_sent != today:
                 print("daily send", today); run_daily(); last_sent = today
-        r = call("getUpdates", {"timeout": 25, "offset": offset}) if False else _get_updates(offset)
+        r = _get_updates(offset)
         for upd in r.get("result", []):
             offset = upd["update_id"] + 1
             msg = upd.get("message") or {}
@@ -214,16 +239,6 @@ def main():
                     users = load_users(); u = users.get(str(cid))
                     if u and u.get("cfg"): run_for_user(cid, u); save_users(users)
                     else: send(cid, "먼저 [⚙️ 설정 열기]로 설정해 주세요.")
-
-def _get_updates(offset):
-    q = {"timeout": 25}
-    if offset is not None: q["offset"] = offset
-    url = API + "/getUpdates?" + urllib.parse.urlencode(q)
-    try:
-        with urllib.request.urlopen(url, timeout=40) as r:
-            return json.loads(r.read().decode())
-    except Exception as e:
-        print("[poll err]", e); time.sleep(3); return {}
 
 if __name__ == "__main__":
     main()
