@@ -1,56 +1,74 @@
 {
  "TQQQ": {
-  "tradeCash": 1000,
+  "tradeCash": 970.0,
   "vault": 0.0,
-  "lots": [],
+  "lots": [
+   {
+    "sh": 0.4176527806662247,
+    "buyP": 71.83000183105469,
+    "tpP": 79.01300201416016
+   }
+  ],
   "realized": 0.0,
-  "prevPx": 74.94999694824219,
+  "prevPx": 71.83000183105469,
   "peak": 1000,
   "storeBase": 1000,
   "curvePeak": 1000,
   "mdd": 0.0,
-  "lastTotal": 1000,
-  "buyCnt": 0,
+  "lastTotal": 1000.0,
+  "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-25"
+  "last_date": "2026-06-26"
  },
  "QLD": {
-  "tradeCash": 1000,
+  "tradeCash": 970.0,
   "vault": 0.0,
-  "lots": [],
+  "lots": [
+   {
+    "sh": 0.3366247652090717,
+    "buyP": 89.12000274658203,
+    "tpP": 98.03200302124024
+   }
+  ],
   "realized": 0.0,
-  "prevPx": 91.7699966430664,
+  "prevPx": 89.12000274658203,
   "peak": 1000,
   "storeBase": 1000,
   "curvePeak": 1000,
   "mdd": 0.0,
-  "lastTotal": 1000,
-  "buyCnt": 0,
+  "lastTotal": 1000.0,
+  "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-25"
+  "last_date": "2026-06-26"
  },
  "SOXL": {
-  "tradeCash": 1000,
+  "tradeCash": 970.0,
   "vault": 0.0,
-  "lots": [],
+  "lots": [
+   {
+    "sh": 0.13914656377883475,
+    "buyP": 215.60000610351562,
+    "tpP": 237.1600067138672
+   }
+  ],
   "realized": 0.0,
-  "prevPx": 252.61000061035156,
+  "prevPx": 215.60000610351562,
   "peak": 1000,
   "storeBase": 1000,
   "curvePeak": 1000,
   "mdd": 0.0,
-  "lastTotal": 1000,
-  "buyCnt": 0,
+  "lastTotal": 1000.0,
+  "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-25"
+  "last_date": "2026-06-26"
  }
 }
