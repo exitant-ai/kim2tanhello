@@ -10,18 +10,18 @@
    }
   ],
   "realized": 0.0,
-  "prevPx": 71.83000183105469,
-  "peak": 1000,
+  "prevPx": 77.19000244140625,
+  "peak": 1002.238619159286,
   "storeBase": 1000,
-  "curvePeak": 1000,
+  "curvePeak": 1002.238619159286,
   "mdd": 0.0,
-  "lastTotal": 1000.0,
+  "lastTotal": 1002.238619159286,
   "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-26"
+  "last_date": "2026-06-29"
  },
  "QLD": {
   "tradeCash": 970.0,
@@ -34,18 +34,18 @@
    }
   ],
   "realized": 0.0,
-  "prevPx": 89.12000274658203,
-  "peak": 1000,
+  "prevPx": 93.68000030517578,
+  "peak": 1001.5350081075155,
   "storeBase": 1000,
-  "curvePeak": 1000,
+  "curvePeak": 1001.5350081075155,
   "mdd": 0.0,
-  "lastTotal": 1000.0,
+  "lastTotal": 1001.5350081075155,
   "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-26"
+  "last_date": "2026-06-29"
  },
  "SOXL": {
   "tradeCash": 970.0,
@@ -58,17 +58,17 @@
    }
   ],
   "realized": 0.0,
-  "prevPx": 215.60000610351562,
-  "peak": 1000,
+  "prevPx": 236.52000427246094,
+  "peak": 1002.9109458594683,
   "storeBase": 1000,
-  "curvePeak": 1000,
+  "curvePeak": 1002.9109458594683,
   "mdd": 0.0,
-  "lastTotal": 1000.0,
+  "lastTotal": 1002.9109458594683,
   "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-26"
+  "last_date": "2026-06-29"
  }
 }
