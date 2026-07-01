@@ -1,27 +1,21 @@
 {
  "TQQQ": {
-  "tradeCash": 970.0,
+  "tradeCash": 1003.8298752339642,
   "vault": 0.0,
-  "lots": [
-   {
-    "sh": 0.4176527806662247,
-    "buyP": 71.83000183105469,
-    "tpP": 79.01300201416016
-   }
-  ],
-  "realized": 0.0,
-  "prevPx": 77.19000244140625,
-  "peak": 1002.238619159286,
+  "lots": [],
+  "realized": 3.8298752339641986,
+  "prevPx": 81.0,
+  "peak": 1003.8298752339642,
   "storeBase": 1000,
-  "curvePeak": 1002.238619159286,
+  "curvePeak": 1003.8298752339642,
   "mdd": 0.0,
-  "lastTotal": 1002.238619159286,
+  "lastTotal": 1003.8298752339642,
   "buyCnt": 1,
-  "tpCnt": 0,
+  "tpCnt": 1,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-29"
+  "last_date": "2026-06-30"
  },
  "QLD": {
   "tradeCash": 970.0,
@@ -34,41 +28,35 @@
    }
   ],
   "realized": 0.0,
-  "prevPx": 93.68000030517578,
-  "peak": 1001.5350081075155,
+  "prevPx": 96.76000213623047,
+  "peak": 1002.5718130007378,
   "storeBase": 1000,
-  "curvePeak": 1001.5350081075155,
+  "curvePeak": 1002.5718130007378,
   "mdd": 0.0,
-  "lastTotal": 1001.5350081075155,
+  "lastTotal": 1002.5718130007378,
   "buyCnt": 1,
   "tpCnt": 0,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-29"
+  "last_date": "2026-06-30"
  },
  "SOXL": {
-  "tradeCash": 970.0,
+  "tradeCash": 1007.1117788364566,
   "vault": 0.0,
-  "lots": [
-   {
-    "sh": 0.13914656377883475,
-    "buyP": 215.60000610351562,
-    "tpP": 237.1600067138672
-   }
-  ],
-  "realized": 0.0,
-  "prevPx": 236.52000427246094,
-  "peak": 1002.9109458594683,
+  "lots": [],
+  "realized": 7.111778836456501,
+  "prevPx": 266.7099914550781,
+  "peak": 1007.1117788364566,
   "storeBase": 1000,
-  "curvePeak": 1002.9109458594683,
+  "curvePeak": 1007.1117788364566,
   "mdd": 0.0,
-  "lastTotal": 1002.9109458594683,
+  "lastTotal": 1007.1117788364566,
   "buyCnt": 1,
-  "tpCnt": 0,
+  "tpCnt": 1,
   "storeCnt": 0,
   "injCnt": 0,
   "quarterCnt": 0,
-  "last_date": "2026-06-29"
+  "last_date": "2026-06-30"
  }
 }
